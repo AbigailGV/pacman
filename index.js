@@ -19,13 +19,72 @@ class Boundary {
 
   draw() {
     // draw a rectangle
-    // first style it, then draw
+    // first style it, then draw it
     c.fillStyle = "blue";
+    // fillRect() draws and paints directly, doesn't need method fill()
     c.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }
 
-// let's do the mapping
+class Player {
+  constructor({ position, direction }) {
+    this.position = position;
+    this.direction = direction;
+    this.radius = 15;
+  }
+
+  draw() {
+    // begin to draw this specific drawing
+    c.beginPath();
+    // tells that the path is going to be a circle
+    c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    // first style it, then fill it
+    c.fillStyle = "yellow";
+    // arc() does need method fill()
+    c.fill();
+    // end of this specific drawing
+    c.closePath();
+  }
+
+  // adding direction to position
+  update() {
+    this.draw();
+    this.position.y += this.direction.y;
+    this.position.x += this.direction.x;
+  }
+}
+
+const boundaries = [];
+const player = new Player({
+  position: {
+    // position where there aren't boundaries
+    x: Boundary.width + Boundary.width / 2,
+    y: Boundary.height + Boundary.height / 2,
+  },
+  direction: {
+    x: 0,
+    y: 0,
+  },
+});
+
+// to track last key pressed so if we press 'w' + 'd' at the same time, we can go to 'd' direction since is the last key pressed
+let lastKey = "";
+
+// track which key is pressed
+const keys = {
+  a: {
+    pressed: false,
+  },
+  w: {
+    pressed: false,
+  },
+  d: {
+    pressed: false,
+  },
+  s: {
+    pressed: false,
+  },
+};
 const map = [
   ["-", "-", "-", "-", "-", "-"],
   ["-", " ", " ", " ", " ", "-"],
@@ -33,7 +92,6 @@ const map = [
   ["-", " ", " ", " ", " ", "-"],
   ["-", "-", "-", "-", "-", "-"],
 ];
-const boundaries = [];
 
 // i = row index
 // j = symbol index
@@ -57,6 +115,67 @@ map.forEach((row, i) => {
   });
 });
 
-boundaries.forEach((boundary) => {
-  boundary.draw();
+//  function that calls itself to create animation loop
+function animate() {
+  // calls function again in the next animation frame
+  requestAnimationFrame(animate);
+  // clears all canvas and reset position
+  c.clearRect(0, 0, canvas.width, canvas.height);
+  boundaries.forEach((boundary) => {
+    boundary.draw();
+  });
+  player.update();
+  // set to 0 so the pacman stop moving
+  player.direction.x = 0;
+  player.direction.y = 0;
+
+  if (keys.a.pressed && lastKey === "a") {
+    player.direction.x = -5;
+  } else if (keys.d.pressed && lastKey === "d") {
+    player.direction.x = 5;
+  } else if (keys.w.pressed && lastKey === "w") {
+    player.direction.y = -5;
+  } else if (keys.s.pressed && lastKey === "s") {
+    player.direction.y = 5;
+  }
+}
+
+animate();
+
+// it's {key} because we need the key property of the object "event"
+addEventListener("keydown", ({ key }) => {
+  switch (key) {
+    case "w":
+      keys.w.pressed = true;
+      lastKey = "w";
+      break;
+    case "s":
+      keys.s.pressed = true;
+      lastKey = "s";
+      break;
+    case "a":
+      keys.a.pressed = true;
+      lastKey = "a";
+      break;
+    case "d":
+      keys.d.pressed = true;
+      lastKey = "d";
+      break;
+  }
+});
+addEventListener("keyup", ({ key }) => {
+  switch (key) {
+    case "w":
+      keys.w.pressed = false;
+      break;
+    case "s":
+      keys.s.pressed = false;
+      break;
+    case "a":
+      keys.a.pressed = false;
+      break;
+    case "d":
+      keys.d.pressed = false;
+      break;
+  }
 });
