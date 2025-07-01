@@ -85,12 +85,15 @@ const keys = {
     pressed: false,
   },
 };
+// alt + shift to select multiple lines
 const map = [
-  ["-", "-", "-", "-", "-", "-"],
-  ["-", " ", " ", " ", " ", "-"],
-  ["-", " ", "-", "-", " ", "-"],
-  ["-", " ", " ", " ", " ", "-"],
-  ["-", "-", "-", "-", "-", "-"],
+  ["-", "-", "-", "-", "-", "-", "-"],
+  ["-", " ", " ", " ", " ", " ", "-"],
+  ["-", " ", "-", " ", "-", " ", "-"],
+  ["-", " ", " ", " ", " ", " ", "-"],
+  ["-", " ", "-", " ", "-", " ", "-"],
+  ["-", " ", " ", " ", " ", " ", "-"],
+  ["-", "-", "-", "-", "-", "-", "-"],
 ];
 
 // i = row index
@@ -115,29 +118,128 @@ map.forEach((row, i) => {
   });
 });
 
+function circleCollidesRectangle({ circle, rectangle }) {
+  // add collison detectors
+  // first is verify the top, then the right, then the bottom and finally left side of player (circle)
+  // we add the "direction" so the pacman doesn't touches the boundary and leaves a margin of space so it wouldn't stop
+  return (
+    circle.position.y - circle.radius + circle.direction.y <=
+      rectangle.position.y + rectangle.height &&
+    circle.position.x + circle.radius + circle.direction.x >=
+      rectangle.position.x &&
+    circle.position.y + circle.radius + circle.direction.y >=
+      rectangle.position.y &&
+    circle.position.x - circle.radius + circle.direction.x <=
+      rectangle.position.x + rectangle.width
+  );
+}
+
 //  function that calls itself to create animation loop
 function animate() {
   // calls function again in the next animation frame
   requestAnimationFrame(animate);
   // clears all canvas and reset position
   c.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (keys.w.pressed && lastKey === "w") {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (
+        circleCollidesRectangle({
+          circle: {
+            // spread operator: take all properties of object "player" and copy them in this new object
+            ...player,
+            // then overrides the "direction" property
+            direction: {
+              x: 0,
+              y: -5,
+            },
+          },
+          rectangle: boundaries[i],
+        })
+      ) {
+        // if there's collision then don´t move
+        player.direction.y = 0;
+        break;
+      } else {
+        // otherwise, move it upwards
+        player.direction.y = -5;
+      }
+    }
+  } else if (keys.a.pressed && lastKey === "a") {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (
+        circleCollidesRectangle({
+          circle: {
+            ...player,
+            direction: {
+              x: -5,
+              y: 0,
+            },
+          },
+          rectangle: boundaries[i],
+        })
+      ) {
+        player.direction.x = 0;
+        break;
+      } else {
+        player.direction.x = -5;
+      }
+    }
+  } else if (keys.s.pressed && lastKey === "s") {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (
+        circleCollidesRectangle({
+          circle: {
+            ...player,
+            direction: {
+              x: 0,
+              y: 5,
+            },
+          },
+          rectangle: boundaries[i],
+        })
+      ) {
+        player.direction.y = 0;
+        break;
+      } else {
+        player.direction.y = 5;
+      }
+    }
+  } else if (keys.d.pressed && lastKey === "d") {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (
+        circleCollidesRectangle({
+          circle: {
+            ...player,
+            direction: {
+              x: 5,
+              y: 0,
+            },
+          },
+          rectangle: boundaries[i],
+        })
+      ) {
+        player.direction.x = 0;
+        break;
+      } else {
+        player.direction.x = 5;
+      }
+    }
+  }
   boundaries.forEach((boundary) => {
     boundary.draw();
+    if (
+      circleCollidesRectangle({
+        circle: player,
+        rectangle: boundary,
+      })
+    ) {
+      // set to 0 so the pacman stop moving
+      player.direction.x = 0;
+      player.direction.y = 0;
+    }
   });
   player.update();
-  // set to 0 so the pacman stop moving
-  player.direction.x = 0;
-  player.direction.y = 0;
-
-  if (keys.a.pressed && lastKey === "a") {
-    player.direction.x = -5;
-  } else if (keys.d.pressed && lastKey === "d") {
-    player.direction.x = 5;
-  } else if (keys.w.pressed && lastKey === "w") {
-    player.direction.y = -5;
-  } else if (keys.s.pressed && lastKey === "s") {
-    player.direction.y = 5;
-  }
 }
 
 animate();
