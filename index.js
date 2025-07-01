@@ -10,19 +10,23 @@ class Boundary {
   static width = 40;
   static height = 40;
   // pass an object so we don't have to memorize order or variables
-  constructor({ position }) {
+  constructor({ position, image }) {
     this.position = position;
     // we want baundaries to be squares
     this.width = 40;
     this.height = 40;
+    this.image = image;
   }
 
   draw() {
     // draw a rectangle
     // first style it, then draw it
-    c.fillStyle = "blue";
+    // c.fillStyle = "blue";
     // fillRect() draws and paints directly, doesn't need method fill()
-    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+    // c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+    // draw image
+    c.drawImage(this.image, this.position.x, this.position.y);
   }
 }
 
@@ -87,15 +91,28 @@ const keys = {
 };
 // alt + shift to select multiple lines
 const map = [
-  ["-", "-", "-", "-", "-", "-", "-"],
-  ["-", " ", " ", " ", " ", " ", "-"],
-  ["-", " ", "-", " ", "-", " ", "-"],
-  ["-", " ", " ", " ", " ", " ", "-"],
-  ["-", " ", "-", " ", "-", " ", "-"],
-  ["-", " ", " ", " ", " ", " ", "-"],
-  ["-", "-", "-", "-", "-", "-", "-"],
+  ["1", "-", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
+  ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
+  ["|", ".", "b", ".", "[", "7", "]", ".", "b", ".", "|"],
+  ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
+  ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
+  ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
+  ["|", ".", "b", ".", "[", "+", "]", ".", "b", ".", "|"],
+  ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
+  ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
+  ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
+  ["|", ".", "b", ".", "[", "5", "]", ".", "b", ".", "|"],
+  ["|", ".", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
+  ["4", "-", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
 ];
 
+function createImage(src) {
+  // javascript way to create images
+  const image = new Image();
+  // image property
+  image.src = src;
+  return image;
+}
 // i = row index
 // j = symbol index
 map.forEach((row, i) => {
@@ -111,6 +128,175 @@ map.forEach((row, i) => {
               // row index with height
               y: Boundary.height * i,
             },
+            image: createImage("./img/pipeHorizontal.png"),
+          })
+        );
+        break;
+      case "|":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/pipeVertical.png"),
+          })
+        );
+        break;
+      case "1":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/pipeCorner1.png"),
+          })
+        );
+        break;
+      case "2":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/pipeCorner2.png"),
+          })
+        );
+        break;
+      case "3":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/pipeCorner3.png"),
+          })
+        );
+        break;
+      case "4":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/pipeCorner4.png"),
+          })
+        );
+        break;
+      case "b":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: Boundary.width * j,
+              y: Boundary.height * i,
+            },
+            image: createImage("./img/block.png"),
+          })
+        );
+        break;
+      case "[":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/capLeft.png"),
+          })
+        );
+        break;
+      case "]":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/capRight.png"),
+          })
+        );
+        break;
+      case "_":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/capBottom.png"),
+          })
+        );
+        break;
+      case "^":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/capTop.png"),
+          })
+        );
+        break;
+      case "+":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/pipeCross.png"),
+          })
+        );
+        break;
+      case "5":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            color: "blue",
+            image: createImage("./img/pipeConnectorTop.png"),
+          })
+        );
+        break;
+      case "6":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            color: "blue",
+            image: createImage("./img/pipeConnectorRight.png"),
+          })
+        );
+        break;
+      case "7":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            color: "blue",
+            image: createImage("./img/pipeConnectorBottom.png"),
+          })
+        );
+        break;
+      case "8":
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width,
+              y: i * Boundary.height,
+            },
+            image: createImage("./img/pipeConnectorLeft.png"),
           })
         );
         break;
