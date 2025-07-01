@@ -1,9 +1,49 @@
+<head>
+  <meta charset="UTF-8" />
+  <meta name="author" content="Abigail Guadarrama" />
+  <meta
+    name="description"
+    content="This is a game to practice javascript skills"
+  />
+
+  <link rel="icon" href="./img/pacman.png" />
+
+  <title>Pacman</title>
+</head>
 <style>
+  @font-face {
+    font-family: "SuperPixel";
+    src: url("./fonts/SuperPixel.ttf") format("truetype");
+  }
+  h1 {
+    font-family: "SuperPixel", sans-serif;
+    color: aliceblue;
+  }
   /* by default chrome puts to canvas a margin = 8px and a display of block */
   body {
     margin: 0;
     background-color: black;
+    padding: 10px 20px;
+  }
+  .imagen {
+    background: url("./img/pacman.png") no-repeat left center;
+    padding-left: 50px;
+    background-size: 50px 50px;
+  }
+  p {
+    color: aliceblue;
+    font-family: sans-serif;
+    font-size: 14px;
+    margin-bottom: 6px;
   }
 </style>
-<canvas></canvas>
+<body>
+  <div>
+    <h1 class="imagen">Pacman by Abi</h1>
+  </div>
+  <div>
+    <p><span>Score: </span><span>0</span></p>
+    <canvas></canvas>
+  </div>
+</body>
 <script src="index.js"></script>
