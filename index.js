@@ -437,10 +437,24 @@ function animate() {
       }
     }
   }
-  // rendering
-  pellets.forEach((pellet) => {
+  // RENDERING
+
+  // looping backwards to avoid awkward flashing on animation
+  for (let i = pellets.length - 1; i > 0; i--) {
+    const pellet = pellets[i];
     pellet.draw();
-  });
+    if (
+      // collision between circles
+      Math.hypot(
+        pellet.position.x - player.position.x,
+        pellet.position.y - player.position.y
+      ) <
+      pellet.radius + player.radius
+    ) {
+      // args: start deleting and how many
+      pellets.splice(i, 1);
+    }
+  }
 
   boundaries.forEach((boundary) => {
     boundary.draw();
