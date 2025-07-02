@@ -1,6 +1,7 @@
 const canvas = document.querySelector("canvas");
 // "context" means having tools to draw on canvas
 const c = canvas.getContext("2d");
+const scoreEle = document.querySelector("#scoreEle");
 
 // customize width and height
 canvas.width = innerWidth;
@@ -88,6 +89,8 @@ const player = new Player({
 
 // to track last key pressed so if we press 'w' + 'd' at the same time, we can go to 'd' direction since is the last key pressed
 let lastKey = "";
+// track score
+let score = 0;
 
 // track which key is pressed
 const keys = {
@@ -362,7 +365,7 @@ function animate() {
             // then overrides the "direction" property
             direction: {
               x: 0,
-              y: -5,
+              y: -4,
             },
           },
           rectangle: boundaries[i],
@@ -373,7 +376,7 @@ function animate() {
         break;
       } else {
         // otherwise, move it upwards
-        player.direction.y = -5;
+        player.direction.y = -4;
       }
     }
   } else if (keys.a.pressed && lastKey === "a") {
@@ -383,7 +386,7 @@ function animate() {
           circle: {
             ...player,
             direction: {
-              x: -5,
+              x: -4,
               y: 0,
             },
           },
@@ -393,7 +396,7 @@ function animate() {
         player.direction.x = 0;
         break;
       } else {
-        player.direction.x = -5;
+        player.direction.x = -4;
       }
     }
   } else if (keys.s.pressed && lastKey === "s") {
@@ -404,7 +407,7 @@ function animate() {
             ...player,
             direction: {
               x: 0,
-              y: 5,
+              y: 4,
             },
           },
           rectangle: boundaries[i],
@@ -413,7 +416,7 @@ function animate() {
         player.direction.y = 0;
         break;
       } else {
-        player.direction.y = 5;
+        player.direction.y = 4;
       }
     }
   } else if (keys.d.pressed && lastKey === "d") {
@@ -423,7 +426,7 @@ function animate() {
           circle: {
             ...player,
             direction: {
-              x: 5,
+              x: 4,
               y: 0,
             },
           },
@@ -433,18 +436,18 @@ function animate() {
         player.direction.x = 0;
         break;
       } else {
-        player.direction.x = 5;
+        player.direction.x = 4;
       }
     }
   }
-  // RENDERING
+  // --------------RENDERING---------------
 
   // looping backwards to avoid awkward flashing on animation
   for (let i = pellets.length - 1; i > 0; i--) {
     const pellet = pellets[i];
     pellet.draw();
     if (
-      // collision between circles
+      // collision between circles (touching pellets)
       Math.hypot(
         pellet.position.x - player.position.x,
         pellet.position.y - player.position.y
@@ -453,6 +456,10 @@ function animate() {
     ) {
       // args: start deleting and how many
       pellets.splice(i, 1);
+      // increase score
+      score += 10;
+      // innerHTML is a property
+      scoreEle.innerHTML = score;
     }
   }
 
