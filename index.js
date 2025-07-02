@@ -44,8 +44,8 @@ class Pellet {
     c.closePath();
   }
 }
-
 class Player {
+  static speed = 4;
   constructor({ position, direction }) {
     this.position = position;
     this.direction = direction;
@@ -72,6 +72,31 @@ class Player {
     this.position.x += this.direction.x;
   }
 }
+class Ghost {
+  static speed = 2;
+  constructor({ position, direction, color = "red" }) {
+    this.position = position;
+    this.direction = direction;
+    this.radius = 15;
+    this.color = color;
+    this.prevCollisions = [];
+    this.speed = 2;
+  }
+
+  draw() {
+    c.beginPath();
+    c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    c.fillStyle = this.color;
+    c.fill();
+    c.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.y += this.direction.y;
+    this.position.x += this.direction.x;
+  }
+}
 
 const boundaries = [];
 const pellets = [];
@@ -86,6 +111,19 @@ const player = new Player({
     y: 0,
   },
 });
+const ghosts = [
+  new Ghost({
+    position: {
+      // close to player
+      x: Boundary.width * 7 + Boundary.width / 2,
+      y: Boundary.height + Boundary.height / 2,
+    },
+    direction: {
+      x: Ghost.speed,
+      y: 0,
+    },
+  }),
+];
 
 // to track last key pressed so if we press 'w' + 'd' at the same time, we can go to 'd' direction since is the last key pressed
 let lastKey = "";
@@ -355,7 +393,9 @@ function animate() {
   // clears all canvas and reset position
   c.clearRect(0, 0, canvas.width, canvas.height);
 
+  // player moves
   if (keys.w.pressed && lastKey === "w") {
+    // we used for loops instead of forEach because we wanted to use "break"
     for (let i = 0; i < boundaries.length; i++) {
       if (
         circleCollidesRectangle({
@@ -365,7 +405,7 @@ function animate() {
             // then overrides the "direction" property
             direction: {
               x: 0,
-              y: -4,
+              y: -Player.speed,
             },
           },
           rectangle: boundaries[i],
@@ -376,7 +416,7 @@ function animate() {
         break;
       } else {
         // otherwise, move it upwards
-        player.direction.y = -4;
+        player.direction.y = -Player.speed;
       }
     }
   } else if (keys.a.pressed && lastKey === "a") {
@@ -386,7 +426,7 @@ function animate() {
           circle: {
             ...player,
             direction: {
-              x: -4,
+              x: -Player.speed,
               y: 0,
             },
           },
@@ -396,7 +436,7 @@ function animate() {
         player.direction.x = 0;
         break;
       } else {
-        player.direction.x = -4;
+        player.direction.x = -Player.speed;
       }
     }
   } else if (keys.s.pressed && lastKey === "s") {
@@ -407,7 +447,7 @@ function animate() {
             ...player,
             direction: {
               x: 0,
-              y: 4,
+              y: Player.speed,
             },
           },
           rectangle: boundaries[i],
@@ -416,7 +456,7 @@ function animate() {
         player.direction.y = 0;
         break;
       } else {
-        player.direction.y = 4;
+        player.direction.y = Player.speed;
       }
     }
   } else if (keys.d.pressed && lastKey === "d") {
@@ -426,7 +466,7 @@ function animate() {
           circle: {
             ...player,
             direction: {
-              x: 4,
+              x: Player.speed,
               y: 0,
             },
           },
@@ -436,7 +476,7 @@ function animate() {
         player.direction.x = 0;
         break;
       } else {
-        player.direction.x = 4;
+        player.direction.x = Player.speed;
       }
     }
   }
@@ -471,14 +511,87 @@ function animate() {
         rectangle: boundary,
       })
     ) {
-      // set to 0 so the pacman stop moving
+      // set to 0 so the pacman stop moving if it collides with boundary
       player.direction.x = 0;
       player.direction.y = 0;
     }
   });
+
+  // update so the player can move
   player.update();
+
+  ghosts.forEach((ghost) => {
+    // update so the ghosts can move
+    ghost.update();
+    const collisions = [];
+    // this is to track all the collisions the ghosts are making
+    boundaries.forEach((boundary) => {
+      // if there isn't the collision "right" already tracked and it's colliding, then add to track
+      if (
+        !collisions.includes("right") &&
+        circleCollidesRectangle({
+          circle: {
+            ...ghost,
+            direction: {
+              x: ghost.speed,
+              y: 0,
+            },
+          },
+          rectangle: boundary,
+        })
+      ) {
+        collisions.push("right");
+      }
+      if (
+        !collisions.includes("left") &&
+        circleCollidesRectangle({
+          circle: {
+            ...ghost,
+            direction: {
+              x: -ghost.speed,
+              y: 0,
+            },
+          },
+          rectangle: boundary,
+        })
+      ) {
+        collisions.push("left");
+      }
+      if (
+        !collisions.includes("up") &&
+        circleCollidesRectangle({
+          circle: {
+            ...ghost,
+            direction: {
+              x: 0,
+              y: -ghost.speed,
+            },
+          },
+          rectangle: boundary,
+        })
+      ) {
+        collisions.push("up");
+      }
+      if (
+        !collisions.includes("down") &&
+        circleCollidesRectangle({
+          circle: {
+            ...ghost,
+            direction: {
+              x: 0,
+              y: ghost.speed,
+            },
+          },
+          rectangle: boundary,
+        })
+      ) {
+        collisions.push("down");
+      }
+    });
+  });
 }
 
+// call function to make everything work
 animate();
 
 // it's {key} because we need the key property of the object "event"
