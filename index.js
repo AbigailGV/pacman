@@ -97,7 +97,7 @@ class Player {
     c.restore();
   }
 
-  // adding direction to position
+  // adding direction to position and animating mouth
   update() {
     this.draw();
     this.position.y += this.direction.y;
