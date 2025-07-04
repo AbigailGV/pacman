@@ -371,25 +371,30 @@ map.forEach((row, i) => {
 });
 
 function circleCollidesRectangle({ circle, rectangle }) {
+  // add padding so that circle collides correctly. Then substract 1 pixel so circle don't collide by default
+  const padding = Boundary.width / 2 - circle.radius - 1;
+
   // add collison detectors
   // first is verify the top, then the right, then the bottom and finally left side of player (circle)
   // we add the "direction" so the pacman doesn't touches the boundary and leaves a margin of space so it wouldn't stop
   return (
     circle.position.y - circle.radius + circle.direction.y <=
-      rectangle.position.y + rectangle.height &&
+      rectangle.position.y + rectangle.height + padding &&
     circle.position.x + circle.radius + circle.direction.x >=
-      rectangle.position.x &&
+      rectangle.position.x - padding &&
     circle.position.y + circle.radius + circle.direction.y >=
-      rectangle.position.y &&
+      rectangle.position.y - padding &&
     circle.position.x - circle.radius + circle.direction.x <=
-      rectangle.position.x + rectangle.width
+      rectangle.position.x + rectangle.width + padding
   );
 }
 
+let animationId;
 //  function that calls itself to create animation loop
 function animate() {
   // calls function again in the next animation frame
-  requestAnimationFrame(animate);
+  // this method returns the id of the frame we are currenly on
+  animationId = requestAnimationFrame(animate);
   // clears all canvas and reset position
   c.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -523,6 +528,20 @@ function animate() {
   ghosts.forEach((ghost) => {
     // update so the ghosts can move
     ghost.update();
+
+    // detect collision between ghost and player
+    if (
+      // collision between circles (touching pellets)
+      Math.hypot(
+        ghost.position.x - player.position.x,
+        ghost.position.y - player.position.y
+      ) <
+      ghost.radius + player.radius
+    ) {
+      // if it collides then stop the frame
+      cancelAnimationFrame(animationId);
+    }
+
     // store actual collisions
     const collisions = [];
     // this is to track all the collisions the ghosts are making
