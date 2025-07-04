@@ -44,6 +44,20 @@ class Pellet {
     c.closePath();
   }
 }
+class PowerUp {
+  constructor({ position }) {
+    this.position = position;
+    this.radius = 8;
+  }
+
+  draw() {
+    c.beginPath();
+    c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    c.fillStyle = "white";
+    c.fill();
+    c.closePath();
+  }
+}
 class Player {
   static speed = 4;
   constructor({ position, direction }) {
@@ -81,12 +95,13 @@ class Ghost {
     this.color = color;
     this.prevCollisions = [];
     this.speed = 2;
+    this.isScared = false;
   }
 
   draw() {
     c.beginPath();
     c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-    c.fillStyle = this.color;
+    c.fillStyle = this.isScared ? "blue" : this.color;
     c.fill();
     c.closePath();
   }
@@ -100,6 +115,7 @@ class Ghost {
 
 const boundaries = [];
 const pellets = [];
+const powerUps = [];
 const player = new Player({
   position: {
     // position where there aren't boundaries
@@ -122,6 +138,17 @@ const ghosts = [
       x: Ghost.speed,
       y: 0,
     },
+  }),
+  new Ghost({
+    position: {
+      x: Boundary.width * 6 + Boundary.width / 2,
+      y: Boundary.height * 3 + Boundary.height / 2,
+    },
+    direction: {
+      x: Ghost.speed,
+      y: 0,
+    },
+    color: "pink",
   }),
 ];
 
@@ -366,6 +393,16 @@ map.forEach((row, i) => {
           })
         );
         break;
+      case "p":
+        powerUps.push(
+          new PowerUp({
+            position: {
+              x: j * Boundary.width + Boundary.width / 2,
+              y: i * Boundary.height + Boundary.height / 2,
+            },
+          })
+        );
+        break;
     }
   });
 });
@@ -487,8 +524,8 @@ function animate() {
   }
   // --------------RENDERING---------------
 
-  // looping backwards to avoid awkward flashing on animation
-  for (let i = pellets.length - 1; i > 0; i--) {
+  // looping backwards to avoid awkward flashing on animation pellets
+  for (let i = pellets.length - 1; i >= 0; i--) {
     const pellet = pellets[i];
     pellet.draw();
     if (
@@ -508,6 +545,53 @@ function animate() {
     }
   }
 
+  // detect collision between ghost and player, and if the ghost is scared
+  for (let i = ghosts.length - 1; i >= 0; i--) {
+    const ghost = ghosts[i];
+    if (
+      // collision between circles (touching ghosts)
+      Math.hypot(
+        ghost.position.x - player.position.x,
+        ghost.position.y - player.position.y
+      ) <
+      ghost.radius + player.radius
+    ) {
+      // if ghost is scared, then remove it from screen
+      if (ghost.isScared) {
+        ghosts.splice(i, 1);
+      } else {
+        // if it collides while ghost isn't scared then stop the frame
+        cancelAnimationFrame(animationId);
+        console.log("you lose");
+      }
+    }
+  }
+
+  // powerUps
+  for (let i = powerUps.length - 1; i >= 0; i--) {
+    const powerUp = powerUps[i];
+    powerUp.draw();
+    if (
+      // collision between circles (touching powerUps)
+      Math.hypot(
+        powerUp.position.x - player.position.x,
+        powerUp.position.y - player.position.y
+      ) <
+      powerUp.radius + player.radius
+    ) {
+      powerUps.splice(i, 1);
+
+      // make ghosts scared
+      ghosts.forEach((ghost) => {
+        ghost.isScared = true;
+        // so it lasts for 5 secs
+        setTimeout(() => {
+          ghost.isScared = false;
+        }, 5000);
+      });
+    }
+  }
+  // boundaries
   boundaries.forEach((boundary) => {
     boundary.draw();
     if (
@@ -525,22 +609,10 @@ function animate() {
   // update so the player can move
   player.update();
 
+  // ghosts
   ghosts.forEach((ghost) => {
     // update so the ghosts can move
     ghost.update();
-
-    // detect collision between ghost and player
-    if (
-      // collision between circles (touching pellets)
-      Math.hypot(
-        ghost.position.x - player.position.x,
-        ghost.position.y - player.position.y
-      ) <
-      ghost.radius + player.radius
-    ) {
-      // if it collides then stop the frame
-      cancelAnimationFrame(animationId);
-    }
 
     // store actual collisions
     const collisions = [];
