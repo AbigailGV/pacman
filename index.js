@@ -166,14 +166,36 @@ const ghosts = [
   }),
   new Ghost({
     position: {
-      x: Boundary.width * 6 + Boundary.width / 2,
-      y: Boundary.height * 3 + Boundary.height / 2,
+      x: Boundary.width * 7 + Boundary.width / 2,
+      y: Boundary.height * 5 + Boundary.height / 2,
     },
     direction: {
       x: Ghost.speed,
       y: 0,
     },
     color: "pink",
+  }),
+  new Ghost({
+    position: {
+      x: Boundary.width + Boundary.width / 2,
+      y: Boundary.height * 5 + Boundary.height / 2,
+    },
+    direction: {
+      x: Ghost.speed,
+      y: 0,
+    },
+    color: "green",
+  }),
+  new Ghost({
+    position: {
+      x: Boundary.width + Boundary.width / 2,
+      y: Boundary.height * 3 + Boundary.height / 2,
+    },
+    direction: {
+      x: Ghost.speed,
+      y: 0,
+    },
+    color: "orange",
   }),
 ];
 
@@ -756,6 +778,7 @@ function animate() {
       ghost.prevCollisions = [];
     }
   });
+  // player rotation while going to specific direction
   if (player.direction.x > 0) {
     player.rotation = 0;
   } else if (player.direction.x < 0) {
