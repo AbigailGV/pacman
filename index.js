@@ -115,7 +115,7 @@ const ghosts = [
   new Ghost({
     position: {
       // close to player
-      x: Boundary.width * 7 + Boundary.width / 2,
+      x: Boundary.width * 6 + Boundary.width / 2,
       y: Boundary.height + Boundary.height / 2,
     },
     direction: {
@@ -523,6 +523,7 @@ function animate() {
   ghosts.forEach((ghost) => {
     // update so the ghosts can move
     ghost.update();
+    // store actual collisions
     const collisions = [];
     // this is to track all the collisions the ghosts are making
     boundaries.forEach((boundary) => {
@@ -588,6 +589,56 @@ function animate() {
         collisions.push("down");
       }
     });
+    // if "collisions" array has more collisions means that has less paths to follow as options
+    // this is to update previous collisons
+    if (collisions.length > ghost.prevCollisions) {
+      ghost.prevCollisions = collisions;
+    }
+    // compare arrays by converting them to json
+    // if they aren't the same, means that actual collisions has more collisions (because of the update we did before)
+    // and we can compare so we can choose path to follow
+    if (JSON.stringify(collisions) !== JSON.stringify(ghost.prevCollisions)) {
+      // now we have to fill in the prevCollisions array with the directions available so we can set a path
+      if (ghost.direction.x > 0) {
+        ghost.prevCollisions.push("right");
+      } else if (ghost.direction.x < 0) {
+        ghost.prevCollisions.push("left");
+      } else if (ghost.direction.y < 0) {
+        ghost.prevCollisions.push("up");
+      } else if (ghost.direction.y > 0) {
+        ghost.prevCollisions.push("down");
+      }
+      // filter to get all collision that were there before but that they aren't there anymore
+      // so we can know if there was a collision (and now isn't) so the ghost can go through that direction
+      const pathways = ghost.prevCollisions.filter((collision) => {
+        return !collisions.includes(collision);
+      });
+      // choose a randow way
+      // we use Math.floor so it can round from 0 - #  and instead of getting a 0.5, we can get a 0
+      const way = pathways[Math.floor(Math.random() * pathways.length)];
+
+      // make the ghost move in the selected way
+      switch (way) {
+        case "right":
+          ghost.direction.x = ghost.speed;
+          ghost.direction.y = 0;
+          break;
+        case "left":
+          ghost.direction.x = -ghost.speed;
+          ghost.direction.y = 0;
+          break;
+        case "up":
+          ghost.direction.x = 0;
+          ghost.direction.y = -ghost.speed;
+          break;
+        case "down":
+          ghost.direction.x = 0;
+          ghost.direction.y = ghost.speed;
+          break;
+      }
+      // reset collisions because we have a new way
+      ghost.prevCollisions = [];
+    }
   });
 }
 
