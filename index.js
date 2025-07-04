@@ -64,19 +64,37 @@ class Player {
     this.position = position;
     this.direction = direction;
     this.radius = 15;
+    // this is for open mouth
+    this.radians = 0.75;
+    this.openrate = 0.12;
+    // rotation
+    this.rotation = 0;
   }
 
   draw() {
+    c.save();
+    c.translate(this.position.x, this.position.y);
+    c.rotate(this.rotation);
+    c.translate(-this.position.x, -this.position.y);
     // begin to draw this specific drawing
     c.beginPath();
-    // tells that the path is going to be a circle
-    c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    // tells that the path is going to be a circle with the open mouth
+    c.arc(
+      this.position.x,
+      this.position.y,
+      this.radius,
+      this.radians,
+      Math.PI * 2 - this.radians
+    );
+    // tells path to the open mouth
+    c.lineTo(this.position.x, this.position.y);
     // first style it, then fill it
     c.fillStyle = "yellow";
     // arc() does need method fill()
     c.fill();
     // end of this specific drawing
     c.closePath();
+    c.restore();
   }
 
   // adding direction to position
@@ -84,6 +102,13 @@ class Player {
     this.draw();
     this.position.y += this.direction.y;
     this.position.x += this.direction.x;
+
+    // open and close mouth is it was eating
+    if (this.radians < 0 || this.radians > 0.75) {
+      this.openrate = -this.openrate;
+    }
+
+    this.radians += this.openrate;
   }
 }
 class Ghost {
@@ -175,7 +200,7 @@ const keys = {
 // alt + shift to select multiple lines
 const map = [
   ["1", "-", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
-  ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
+  ["|", ".", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
   ["|", ".", "b", ".", "[", "7", "]", ".", "b", ".", "|"],
   ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
   ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
@@ -185,7 +210,7 @@ const map = [
   ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
   ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
   ["|", ".", "b", ".", "[", "5", "]", ".", "b", ".", "|"],
-  ["|", ".", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
+  ["|", "p", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
   ["4", "-", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
 ];
 
@@ -731,7 +756,16 @@ function animate() {
       ghost.prevCollisions = [];
     }
   });
-}
+  if (player.direction.x > 0) {
+    player.rotation = 0;
+  } else if (player.direction.x < 0) {
+    player.rotation = Math.PI;
+  } else if (player.direction.y > 0) {
+    player.rotation = Math.PI / 2;
+  } else if (player.direction.y < 0) {
+    player.rotation = Math.PI * 1.5;
+  }
+} // end of animate()
 
 // call function to make everything work
 animate();
